@@ -40,6 +40,7 @@
                 </div>
 
                 <form id="authForm" method="POST" action="${pageContext.request.contextPath}/perform_login" novalidate>
+                    <input type="hidden" name="_csrf" value="${_csrf.token}" />
 
                     <!-- Login Category -->
                     <div class="form-group">

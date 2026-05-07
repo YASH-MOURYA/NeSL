@@ -47,6 +47,7 @@
                 </c:if>
 
                 <form method="POST" action="/profile" novalidate>
+                    <input type="hidden" name="_csrf" value="${_csrf.token}" />
 
                     <div class="form-group">
                         <div class="field-label">Name <span class="req">*</span></div>

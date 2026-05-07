@@ -12,6 +12,7 @@
     <div class="card">
         <h1>${user.id == null ? 'Create User' : 'Edit User'}</h1>
         <form method="post" action="${pageContext.request.contextPath}/users">
+            <input type="hidden" name="_csrf" value="${_csrf.token}" />
             <input type="hidden" name="id" value="${user.id}" />
             <div class="field">
                 <label>Name</label>

@@ -1,17 +1,27 @@
 package com.example.Spring_Demo;
 
+import com.example.Spring_Demo.security.ApiAccessLoggingFilter;
+import com.example.Spring_Demo.security.AuthEntryPointJwt;
+import com.example.Spring_Demo.security.AuthTokenFilter;
+import com.example.Spring_Demo.security.CustomAuthenticationFailureHandler;
+import com.example.Spring_Demo.security.CustomAuthenticationSuccessHandler;
+import com.example.Spring_Demo.security.SecurityFilter;
 import com.example.Spring_Demo.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -23,10 +33,40 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Nullable
     private UserDetailsServiceImpl userDetailsService;
 
+    @Autowired
+    private SecurityFilter securityFilter;
+
+    @Autowired
+    private AuthEntryPointJwt unauthorizedHandler;
+
+    @Autowired
+    private AuthTokenFilter authTokenFilter;
+
+    @Autowired
+    private CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
+    @Autowired
+    private CustomAuthenticationFailureHandler authenticationFailureHandler;
+
+    @Autowired
+    private ApiAccessLoggingFilter apiAccessLoggingFilter;
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
     // ✅ Password encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    // ✅ Security filter
+    @Bean
+    public SecurityFilter securityFilter() {
+        return new SecurityFilter();
     }
 
     // ✅ Authentication config
@@ -42,8 +82,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+            .cors().and()
+            .csrf()
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringAntMatchers("/api/auth/**")
+            .and()
+            .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+            .and()
+            .sessionManagement()
+                .sessionFixation().migrateSession()
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
+                .and()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .invalidSessionUrl("/login?invalid-session=true")
+            .and()
             .authorizeRequests()
+                // Public endpoints
                 .antMatchers("/", "/login", "/css/**", "/js/**", "/images/**", "/h2-console/**", "/oauth2/**", "/login/oauth2/**").permitAll()
+                // API endpoints - JWT protected
+                .antMatchers("/api/auth/**").permitAll()
+                .antMatchers("/api/**").authenticated()
+                // Web endpoints - form login protected
                 .antMatchers("/users/**").hasAnyRole("ADMIN", "MANAGER")
                 .anyRequest().authenticated()
             .and()
@@ -52,13 +112,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginProcessingUrl("/perform_login")
                 .usernameParameter("userId")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/login?error=true")
+                .successHandler(authenticationSuccessHandler)
+                .failureHandler(authenticationFailureHandler)
                 .permitAll()
             .and()
             .oauth2Login()
                 .loginPage("/login")
                 .defaultSuccessUrl("/dashboard", true)
+            .and()
+            .oauth2ResourceServer()
+                .jwt()
+            .and()
             .and()
             .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
@@ -67,7 +131,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             .and()
-            .csrf().disable()
-            .headers().frameOptions().disable();
+            .headers()
+                .frameOptions().deny()
+            .and()
+            .requiresChannel()
+                .anyRequest().requiresSecure()
+            .and()
+            .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(apiAccessLoggingFilter, AuthTokenFilter.class)
+            .addFilterBefore(securityFilter, org.springframework.security.web.session.ConcurrentSessionFilter.class);
     }
 }

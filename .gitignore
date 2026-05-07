@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local application logs and temporary artifacts
+logs/
+*.p12
