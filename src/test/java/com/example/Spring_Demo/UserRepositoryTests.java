@@ -31,18 +31,18 @@ class UserRepositoryTests {
         assertThat(count).isGreaterThanOrEqualTo(6);
 
         // Test finding a specific user
-        Optional<UserAccount> user = userRepository.findByUserIdAndPasswordAndRole("entity1", "entity123", "ENTITY");
-        assertThat(user).isPresent();
-        assertThat(user.get().getEmail()).isEqualTo("entity1@example.com");
-        assertThat(user.get().getName()).isEqualTo("Entity One");
+        UserAccount user = userRepository.findByUserIdAndPasswordAndRole("entity1", "entity123", "ENTITY")
+                .orElseThrow(() -> new IllegalStateException("Expected entity1 to exist"));
+        assertThat(user.getEmail()).isEqualTo("entity1@example.com");
+        assertThat(user.getName()).isEqualTo("Entity One");
     }
 
     @Test
     void shouldFindUserByUserIdOnly() {
-        Optional<UserAccount> user = userRepository.findByUserId("entity1");
-        assertThat(user).isPresent();
-        assertThat(user.get().getName()).isEqualTo("Entity One");
-        assertThat(user.get().getRole()).isEqualTo("ENTITY");
+        UserAccount user = userRepository.findByUserId("entity1")
+                .orElseThrow(() -> new IllegalStateException("Expected entity1 to exist"));
+        assertThat(user.getName()).isEqualTo("Entity One");
+        assertThat(user.getRole()).isEqualTo("ENTITY");
     }
 
     @Test
@@ -60,16 +60,16 @@ class UserRepositoryTests {
 
         assertThat(saved.getId()).isNotNull();
 
-        Optional<UserAccount> found = userRepository.findByUserIdAndPasswordAndRole("testuser", "test123", "INDIVIDUAL");
-        assertThat(found).isPresent();
-        assertThat(found.get().getEmail()).isEqualTo("testuser@example.com");
+        UserAccount found = userRepository.findByUserIdAndPasswordAndRole("testuser", "test123", "INDIVIDUAL")
+                .orElseThrow(() -> new IllegalStateException("Expected testuser to exist"));
+        assertThat(found.getEmail()).isEqualTo("testuser@example.com");
     }
 
     @Test
     void shouldFindUserByUserIdAndRole() {
-        Optional<UserAccount> user = userRepository.findByUserIdAndPasswordAndRole("irp1", "irp123", "IRP");
-        assertThat(user).isPresent();
-        assertThat(user.get().getEmail()).isEqualTo("irp1@example.com");
+        UserAccount user = userRepository.findByUserIdAndPasswordAndRole("irp1", "irp123", "IRP")
+                .orElseThrow(() -> new IllegalStateException("Expected irp1 to exist"));
+        assertThat(user.getEmail()).isEqualTo("irp1@example.com");
     }
 
     @Test
@@ -80,10 +80,8 @@ class UserRepositoryTests {
 
     @Test
     void shouldUpdateUserDetails() {
-        Optional<UserAccount> user = userRepository.findByUserId("entity1");
-        assertThat(user).isPresent();
-
-        UserAccount userAccount = user.get();
+        UserAccount userAccount = userRepository.findByUserId("entity1")
+                .orElseThrow(() -> new IllegalStateException("Expected entity1 to exist"));
         userAccount.setEmail("newemail@example.com");
         userRepository.save(userAccount);
         entityManager.flush();

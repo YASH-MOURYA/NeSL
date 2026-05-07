@@ -1,24 +1,22 @@
 package com.example.Spring_Demo;
 
-import com.example.Spring_Demo.model.UserAccount;
 import com.example.Spring_Demo.repository.UserRepository;
+import com.example.Spring_Demo.security.JwtProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.lang.Nullable;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Arrays;
-
 @SpringBootApplication
+@EnableConfigurationProperties(JwtProperties.class)
 public class SpringDemoApplication implements CommandLineRunner {
 
 	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired(required = false)
-	@Nullable
 	private PasswordEncoder passwordEncoder;
 
 	public static void main(String[] args) {
