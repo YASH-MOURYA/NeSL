@@ -112,15 +112,15 @@ The app protects pages and endpoints with these rules:
 ### Development
 
 ```bash
-./mvnw clean package
-./mvnw spring-boot:run
+.\mvnw clean package
+.\mvnw spring-boot:run
 ```
 
 ### Windows
 
 ```powershell
-./mvnw.cmd clean package
-./mvnw.cmd spring-boot:run
+.\mvnw.cmd clean package
+.\mvnw.cmd spring-boot:run
 ```
 
 ## Configuration notes
