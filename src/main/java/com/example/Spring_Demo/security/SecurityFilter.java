@@ -22,10 +22,10 @@ public class SecurityFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        String requestPath = httpRequest.getRequestURI();
         String clientIP = getClientIP(httpRequest);
 
-        // Rate limiting: max 10 requests per minute per IP
-        if (isRateLimited(clientIP)) {
+        if (!isStaticResource(requestPath) && isRateLimited(clientIP)) {
             httpResponse.setStatus(429);
             httpResponse.getWriter().write("Too many requests. Please try again later.");
             return;
@@ -35,8 +35,7 @@ public class SecurityFilter implements Filter {
         httpResponse.setHeader("X-Content-Type-Options", "nosniff");
         httpResponse.setHeader("X-Frame-Options", "DENY");
         httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
-        httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubdomains");
-        httpResponse.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'");
+        httpResponse.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com");
         httpResponse.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
         // Only allow HTTPS in production
@@ -45,6 +44,13 @@ public class SecurityFilter implements Filter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean isStaticResource(String requestPath) {
+        return requestPath.startsWith("/css/")
+                || requestPath.startsWith("/js/")
+                || requestPath.startsWith("/images/")
+                || requestPath.equals("/favicon.ico");
     }
 
     private String getClientIP(HttpServletRequest request) {
@@ -74,7 +80,7 @@ public class SecurityFilter implements Filter {
             // Increment count
             int currentCount = count.incrementAndGet();
             lastRequestTimes.put(clientIP, currentTime);
-            return currentCount > 10; // Max 10 requests per minute
+            return currentCount > 120;
         }
     }
 }

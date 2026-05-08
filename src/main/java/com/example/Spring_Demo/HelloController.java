@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class HelloController {
 
+    @GetMapping({"/", "/home"})
+    public String showHomePage() {
+        return "home";
+    }
 
-
-    @GetMapping({"/", "/login"})
+    @GetMapping("/login")
     public String showLoginPage() {
         return "form";
     }

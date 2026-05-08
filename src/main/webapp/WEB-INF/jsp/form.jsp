@@ -8,12 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css">
 </head>
-<body>
-
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
+<body class="login-page">
 
     <!-- ── HEADER ── -->
     <header class="header">
@@ -35,8 +32,15 @@
             <div class="card-body">
 
                 <div class="section-head">
-                    <h1></h1>
-                    <p>Sign in to continue to your NeSL account</p>
+                    <div class="locale-switcher">
+                        <label for="localeSelect">Language</label>
+                        <select id="localeSelect" onchange="switchLanguage()">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी</option>
+                        </select>
+                    </div>
+                    <h1 id="pageHeading">Welcome</h1>
+                    <p id="pageSubhead">Sign in to continue to your NeSL account</p>
                 </div>
 
                 <form id="authForm" method="POST" action="${pageContext.request.contextPath}/perform_login" novalidate>
@@ -44,7 +48,7 @@
 
                     <!-- Login Category -->
                     <div class="form-group">
-                        <div class="field-label">Login Category <span class="req">*</span></div>
+                        <div class="field-label" id="loginCategoryLabel"><span id="loginCategoryLabelText">Login Category</span> <span class="req">*</span></div>
                         <div class="input-shell">
                             <div class="input-icon">&#9783;</div>
                             <select id="loginType" name="loginType" onchange="toggleForm()" required>
@@ -60,8 +64,8 @@
 
                     <!-- UIN / PAN -->
                     <div class="form-group hidden" id="uinWrap">
-                        <div class="field-label">
-                            UIN (PAN) <span class="req">*</span>
+                        <div class="field-label" id="uinLabel">
+                            <span id="uinLabelText">UIN (PAN)</span> <span class="req">*</span>
                             <span class="badge-pill">Entity Format</span>
                         </div>
                         <div class="input-shell" id="uinShell">
@@ -101,7 +105,7 @@
 
                     <!-- CAPTCHA -->
                     <div class="form-group">
-                        <div class="field-label">Verification Code <span class="req">*</span></div>
+                        <div class="field-label" id="captchaLabel"><span id="captchaLabelText">Verification Code</span> <span class="req">*</span></div>
                         <div class="captcha-row">
                             <div class="input-shell">
                                 <div class="input-icon">&#128272;</div>
@@ -116,32 +120,92 @@
                     <!-- Actions -->
                     <div class="actions">
                         <button type="submit" class="btn-signin">Sign In &rarr;</button>
-                        <a href="#" id="forgotBtn" class="forgot-link">Forgot Password?</a>
                     </div>
 
-                    <div class="divider"><span>or</span></div>
+                    <div class="divider"><span>or continue with</span></div>
 
                     <div class="social-login">
                         <a class="btn-google" href="${pageContext.request.contextPath}/oauth2/authorization/google">
-                            Continue with Google
+                            <svg class="btn-google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                            </svg>
+                            <span class="btn-google-text">Sign in with Google</span>
                         </a>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 18px;">
+                        <a href="#" id="forgotBtn" class="forgot-link">Forgot your password?</a>
                     </div>
 
                 </form>
             </div>
-
-            <!-- Card Footer -->
             <footer class="card-footer">
-                <div class="reg-row">
-                    <span class="reg-label">New Entity?</span>
-                    <a href="#" class="reg-link">Register Now &rsaquo;</a>
-                </div>
-                <div class="reg-row">
-                    <span class="reg-label">New Individual?</span>
-                    <a href="#" class="reg-link">Register Now &rsaquo;</a>
-                </div>
-                <a href="#" class="help-link">&#128222; &nbsp;Contact Help Desk</a>
+                    <div class="reg-row">
+                        <span class="reg-label">New Entity?</span>
+                        <a href="#" class="reg-link">Register Now &rsaquo;</a>
+                    </div>
+                    <div class="reg-row">
+                        <span class="reg-label">New Individual?</span>
+                        <a href="#" class="reg-link">Register Now &rsaquo;</a>
+                    </div>
+                    <a href="#" class="help-link">&#128222; &nbsp;Contact Help Desk</a>
             </footer>
+
+            <script>
+                const translations = {
+                    en: {
+                        heading: 'Welcome',
+                        subhead: 'Sign in to continue to your NeSL account',
+                        loginCategory: 'Login Category',
+                        uinLabel: 'UIN (PAN)',
+                        userId: 'User ID',
+                        password: 'Password',
+                        captcha: 'Verification Code',
+                        signIn: 'Sign In →',
+                        forgot: 'Forgot your password?',
+                        orContinue: 'or continue with',
+                        google: 'Sign in with Google'
+                    },
+                    hi: {
+                        heading: 'स्वागत है',
+                        subhead: 'अपने NeSL खाते में साइन इन करें',
+                        loginCategory: 'लॉगिन श्रेणी',
+                        uinLabel: 'यूआईएन (PAN)',
+                        userId: 'उपयोगकर्ता आईडी',
+                        password: 'पासवर्ड',
+                        captcha: 'सत्यापन कोड',
+                        signIn: 'साइन इन करें →',
+                        forgot: 'क्या आपने पासवर्ड भूल गए?',
+                        orContinue: 'या इस के साथ जारी रखें',
+                        google: 'Google से साइन इन करें'
+                    }
+                };
+
+                function switchLanguage() {
+                    const locale = document.getElementById('localeSelect').value;
+                    const text = translations[locale] || translations.en;
+
+                    document.getElementById('pageHeading').textContent = text.heading;
+                    document.getElementById('pageSubhead').textContent = text.subhead;
+                    document.getElementById('loginCategoryLabelText').textContent = text.loginCategory;
+                    document.getElementById('uinLabelText').textContent = text.uinLabel;
+                    document.getElementById('lblOne').textContent = text.userId;
+                    document.getElementById('lblTwo').textContent = text.password;
+                    document.getElementById('captchaLabelText').textContent = text.captcha;
+                    document.querySelector('.btn-signin').textContent = text.signIn;
+                    document.querySelector('.forgot-link').textContent = text.forgot;
+                    document.querySelector('.divider span').textContent = text.orContinue;
+                    document.querySelector('.btn-google-text').textContent = text.google;
+                }
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    const locale = document.getElementById('localeSelect').value;
+                    if (locale) { switchLanguage(); }
+                });
+            </script>
         </div>
     </main>
 
@@ -182,7 +246,7 @@
             eyeBtn.style.display   = 'inline';
             clearUinState();
 
-            if (val === 'ENTITY' || val === 'GOVT' || val === 'AOP') {
+            if (val === 'ENTITY' || val === 'IRP' || val === 'GOVT' || val === 'AOP') {
                 uinWrap.classList.remove('hidden');
             } else if (val === 'INDIVIDUAL') {
                 otpBtn.style.display   = 'inline-block';
